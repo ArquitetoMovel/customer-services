@@ -1,0 +1,51 @@
+@page "/ticket"
+@inject HttpClient Http
+
+<h3>Selecione uma opção para gerar o atendimento</h3>
+
+<button @onclick="GenerateNormalTicket">Gerar atendimento normal</button>
+<button @onclick="GeneratePriorityTicket"><b>Gerar atendimento prioritario</b></button>
+<br />
+<div>
+@if (ticketResult != null)
+{
+    <h4>Numero do Atendimento: @ticketResult.TicketNumber</h4>
+    <h5>Prioridade: @ConfigurePriority(ticketResult.Type)</h5>
+}
+</div>
+@code {
+    private TicketResult? ticketResult;
+
+    private static string ConfigurePriority(int priorityType)
+    {
+        return priorityType == 0 ? "Normal" : "Prioritário";
+    }
+
+    private async Task GenerateNormalTicket()
+    {
+        await GenerateTicket(0);
+    }
+
+    private async Task GeneratePriorityTicket()
+    {
+        await GenerateTicket(1);
+    }
+
+    private async Task GenerateTicket(int type)
+    {
+        try
+        {
+            var response = await Http.PostAsJsonAsync("/api/attendance/generate-ticket?type="+type, new { });
+            if (response.IsSuccessStatusCode)
+            {
+                ticketResult = await response.Content.ReadFromJsonAsync<TicketResult>() ?? 
+                               throw new InvalidOperationException("Não foi possível gerar o seu numero");
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+}
