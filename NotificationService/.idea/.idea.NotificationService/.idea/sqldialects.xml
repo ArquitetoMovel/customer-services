@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SqlDialectMappings">
+    <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/c7b14e54-1343-45fb-ab88-78c0476a6d84/console_1.js" dialect="MongoDB" />
+  </component>
+</project>
