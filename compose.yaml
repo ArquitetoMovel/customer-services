@@ -1,0 +1,132 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    ports:
+      - "5672:5672" # Porta padrão do RabbitMQ
+      - "15672:15672" # Porta da interface de administração
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - rabbitmq_log:/var/log/rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=adminpassword
+    restart: unless-stopped
+    networks:
+      - customer-network
+
+  mongo1:
+    image: mongo:latest
+    container_name: mongo1
+    volumes:
+      - mongo1_data:/data/db
+    command: mongod --replSet rs0 --bind_ip_all
+    ports:
+      - "27017:27017"
+    networks:
+      - customer-network
+
+  mongo2:
+    image: mongo:latest
+    container_name: mongo2
+    volumes:
+      - mongo2_data:/data/db
+    command: mongod --replSet rs0 --bind_ip_all
+    networks:
+      - customer-network
+
+  mongo3:
+    image: mongo:latest
+    container_name: mongo3
+    volumes:
+      - mongo3_data:/data/db
+    command: mongod --replSet rs0 --bind_ip_all
+    networks:
+      - customer-network
+
+  mongo-init:
+    image: mongo:latest
+    depends_on:
+      - mongo1
+      - mongo2
+      - mongo3
+    networks:
+      - customer-network
+    volumes:
+      - ./init-replica.sh:/init-replica.sh
+    entrypoint: ["/bin/bash", "/init-replica.sh"]
+
+  postgres:
+    image: postgres:15
+    container_name: notification_postgres
+    environment:
+      POSTGRES_DB: notificationdb
+      POSTGRES_USER: nuser
+      POSTGRES_PASSWORD: npass1
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - customer-network
+
+  user-management-service:
+    image: user-management-service
+    build:
+      context: UserManagementService
+      dockerfile: Dockerfile
+    depends_on:
+      rabbitmq:
+        condition: service_started
+      mongo1:
+        condition: service_started
+    container_name: user-management-app
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "8080:8080"
+    networks:
+      - customer-network
+  notification-service:
+    image: notification-service
+    build:
+      context: NotificationService
+      dockerfile: Dockerfile
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_started
+    container_name: notification-app
+    command:
+      [
+        "~/.dotnet/tools/dotnet-ef",
+        "database",
+        "update",
+        "--project",
+        "../src/NotificationService.Infrastructure/NotificationService.Infrastructure.csproj",
+      ]
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    restart: on-failure
+    networks:
+      - customer-network
+
+networks:
+  customer-network:
+    driver: bridge
+
+volumes:
+  rabbitmq_data:
+  rabbitmq_log:
+  mongo1_data:
+  mongo2_data:
+  mongo3_data:
+  postgres_data:

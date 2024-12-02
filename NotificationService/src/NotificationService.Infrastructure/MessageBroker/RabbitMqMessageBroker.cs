@@ -1,12 +1,11 @@
-using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Configuration;
 using NotificationService.Domain.Entities;
 using NotificationService.Domain.Ports;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using RabbitMQ.Client.Exceptions;
 
 namespace NotificationService.Infrastructure.MessageBroker;
 
@@ -23,11 +22,19 @@ public class RabbitMqMessageBroker(IConfiguration configuration) : IMessageBroke
 
     public async Task ConsumeTicketsAsync(Func<AttendanceTicket, Task> processTicket, 
         CancellationToken cancellationToken)
+{
+    Console.WriteLine("Host :" + _factory.HostName);
+    
+    while (!cancellationToken.IsCancellationRequested)
     {
-        var connection = await _factory.CreateConnectionAsync(cancellationToken);
-        var channel = await connection.CreateChannelAsync(cancellationToken: cancellationToken);
+        IConnection? connection = null;
+        IChannel? channel = null;
+
         try
         {
+            connection = await _factory.CreateConnectionAsync(cancellationToken);
+            channel = await connection.CreateChannelAsync(cancellationToken: cancellationToken);
+
             await channel.QueueBindAsync(queue: _queueName,
                 exchange: _exchangeName,
                 routingKey: string.Empty,
@@ -53,6 +60,7 @@ public class RabbitMqMessageBroker(IConfiguration configuration) : IMessageBroke
                     Console.WriteLine(ex);
                 }
             };
+
             await channel.BasicConsumeAsync(_queueName, autoAck: true, consumer: consumer,
                 cancellationToken: cancellationToken);
 
@@ -60,18 +68,33 @@ public class RabbitMqMessageBroker(IConfiguration configuration) : IMessageBroke
             var tcs = new TaskCompletionSource<bool>();
             await using (cancellationToken.Register(() => tcs.TrySetResult(true)))
             {
+                Console.WriteLine("Aguardando novos tickets");
                 await tcs.Task;
             }
         }
+        catch (Exception ex) when (ex is BrokerUnreachableException or OperationInterruptedException) 
+        {
+            Console.WriteLine("Falha ao conectar ao RabbitMQ. Tentando novamente em 5 segundos...");
+            Console.WriteLine(ex.Message);
+            await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken); 
+        }
         catch (Exception ex)
         {
-            Console.WriteLine(ex);
-            // Log the error and possibly retry or handle the exception
+            Console.WriteLine("Erro inesperado: " + ex.Message);
+            break; // Sai do loop em caso de erro inesperado
         }
         finally
         {
-            channel.Dispose();
-            await connection.CloseAsync(cancellationToken: cancellationToken);
+            if (channel != null)
+            {
+                channel.Dispose();
+            }
+            if (connection != null)
+            {
+                await connection.CloseAsync(cancellationToken: cancellationToken);
+            }
         }
     }
+}
+   
 }

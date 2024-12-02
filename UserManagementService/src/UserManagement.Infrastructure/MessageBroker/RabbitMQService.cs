@@ -18,7 +18,9 @@ public class RabbitMqService(IConfiguration configuration) : IMessageBrokerServi
     };
     private IConnection? _connection;
     private IChannel? _channel;
-    private const string QueueName = "attendance_tickets";
+    private const string NotificationQueue = "attendance_tickets";
+    private const string CustomerQueue = "attendance_customers";
+    private const string CustomerExchange = "customer.exchange";
     private readonly SemaphoreSlim _semaphore = new(1, 1);
 
     private async Task EnsureConnectionAndChannelAsync()
@@ -31,12 +33,21 @@ public class RabbitMqService(IConfiguration configuration) : IMessageBrokerServi
         if (_channel?.IsOpen != true)
         {
             _channel = await _connection.CreateChannelAsync();
+            await _channel.ExchangeDeclareAsync(CustomerExchange, ExchangeType.Fanout, true);
             await _channel.QueueDeclareAsync(
-                queue: QueueName,
+                queue: NotificationQueue, 
                 durable: false,
                 exclusive: false,
                 autoDelete: false,
                 arguments: null);
+            await _channel.QueueDeclareAsync(
+                queue: CustomerQueue,
+                durable: false,
+                exclusive: false,
+                autoDelete: false,
+                arguments: null);
+            await _channel.QueueBindAsync(NotificationQueue, CustomerExchange, string.Empty);
+            await _channel.QueueBindAsync(CustomerQueue, CustomerExchange, string.Empty);
         }
     }
 
@@ -49,11 +60,11 @@ public class RabbitMqService(IConfiguration configuration) : IMessageBrokerServi
 
             var message = JsonSerializer.Serialize(ticket);
             var body = new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(message));
-            
-            if(_channel != null)
+
+            if (_channel != null)
                 await _channel.BasicPublishAsync(
-                    exchange: string.Empty,
-                    routingKey: QueueName,
+                    exchange: CustomerExchange,
+                    routingKey: string.Empty,
                     body: body
                 );
         }

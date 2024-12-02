@@ -8,7 +8,7 @@ public class NotificationDbContextFactory : IDesignTimeDbContextFactory<Notifica
     public NotificationDbContext CreateDbContext(string[] args)
     {
         var optionsBuilder = new DbContextOptionsBuilder<NotificationDbContext>();
-        optionsBuilder.UseNpgsql("Host=localhost;Database=notificationdb;Username=nuser;Password=npass1");
+        optionsBuilder.UseNpgsql("Host=postgres;Database=notificationdb;Username=nuser;Password=npass1");
 
         return new NotificationDbContext(optionsBuilder.Options);
     }
