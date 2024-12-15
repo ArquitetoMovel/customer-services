@@ -9,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 builder.AddNpgsqlDbContext<UserTicketDbContext>("customer_db");
 builder.AddRabbitMQClient(connectionName: "customer_broker");
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IUserTicketRepository, UserTicketRepository>();
 builder.Services.AddSingleton<ICustomerIntegrationBus, CustomerIntegrationBus>();
 builder.Services.AddHostedService<CustomerIntegrationService>();

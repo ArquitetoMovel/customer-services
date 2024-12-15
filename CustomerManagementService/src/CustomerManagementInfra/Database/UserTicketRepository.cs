@@ -23,8 +23,8 @@ public class UserTicketRepository(UserTicketDbContext dbContext) : IUserTicketRe
     {
         return await dbContext.UserTickets
             .Where(t => t.Status == StatusTicket.Waiting)
-            .OrderBy(t => t.Number)
-            .ThenBy(t => t.Type)
+            .OrderByDescending(t => t.Type)
+            .ThenBy(t => t.Number) 
             .Take(1)
             .ToListAsync();
     }
