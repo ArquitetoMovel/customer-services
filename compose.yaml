@@ -118,10 +118,53 @@ services:
     restart: on-failure
     networks:
       - customer-network
+    
+  jaeger-tracing:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686"
+      - "14250:14250"
+      - "14268:14268"
+      - "4317:4317"
+    networks:
+      - customer-network
+  seq-log:
+    image: datalust/seq
+    volumes:
+      - ./seq:/data
+    ports:
+      - "8282:80"
+      - "5341:5341"
+    environment:
+      - ACCEPT_EULA=Y
+    networks:
+      - customer-network
+  victoria-metrics:
+    image: victoriametrics/victoria-metrics
+    volumes:
+      - ./victoria:/victoria-metrics-data
+    ports:
+      - "8428:8428"
+    networks:
+      - customer-network
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.110.0
+    volumes:
+      - ./otel/config.yaml:/etc/otelcol-contrib/config.yaml
+    ports:
+      - 1888:1888 # pprof extension
+      #- 8888:8888 # Prometheus metrics exposed by the Collector
+      #- 8889:8889 # Prometheus exporter metrics
+      - 13133:13133 # health_check extension
+      - 9317:9317 # OTLP gRPC receiver
+      - 9318:9318 # OTLP http receiver
+      - 55679:55679 # zpages extension
+    networks:
+      - customer-network
 
 networks:
   customer-network:
-    driver: bridge
+    external: true
 
 volumes:
   rabbitmq_data:
