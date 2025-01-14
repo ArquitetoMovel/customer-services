@@ -49,7 +49,7 @@ public class EfCoreAttendanceTicketRepository(AttendanceTicketDbContext context)
             .FirstOrDefaultAsync() ?? throw new InvalidOperationException();
     }
 
-    public async Task<AttendanceTicket> GetNextTicketAsync()
+    public async Task<AttendanceTicket> GetNextTicketInWaitAndUpdateToCallStatusAsync()
     {
         await using var transaction = await context.Database.BeginTransactionAsync();
 
@@ -82,5 +82,12 @@ public class EfCoreAttendanceTicketRepository(AttendanceTicketDbContext context)
             .Where(t => t.Status == AttendanceStatus.Waiting && t.Type == type)
             .OrderBy(t => t.CreatedAt)
             .FirstOrDefaultAsync();
+    }
+
+    public Task<long> GetWaitingTicketsCountByTypeAsync(AttendanceType type)
+    {
+        return context.AttendanceTickets
+            .Where(t => t.Status == AttendanceStatus.Waiting && t.Type == type)
+            .LongCountAsync();
     }
 }
