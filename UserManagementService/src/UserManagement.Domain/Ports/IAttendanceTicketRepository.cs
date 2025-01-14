@@ -1,4 +1,5 @@
 using UserManagement.Domain.Entities;
+using UserManagement.Domain.Enums;
 
 namespace UserManagement.Domain.Ports;
 
@@ -9,6 +10,7 @@ public interface IAttendanceTicketRepository
     Task<IEnumerable<AttendanceTicket>> GetAllAsync();
     Task UpdateAsync(AttendanceTicket ticket);
     Task DeleteAsync(int id);
-    Task<AttendanceTicket> GetNextTicketAsync();
+    Task<AttendanceTicket> GetNextTicketInWaitAndUpdateToCallStatusAsync();
     Task<AttendanceTicket> GetLastTicketAsync();
+    Task<long> GetWaitingTicketsCountByTypeAsync(AttendanceType type);
 }

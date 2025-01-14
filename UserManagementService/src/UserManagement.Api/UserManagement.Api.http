@@ -1,6 +1,11 @@
-@UserManagement.Api_HostAddress = http://localhost:5196
+@UserManagement_Api_HostAddress = http://localhost:8080
 
-GET {{UserManagement.Api_HostAddress}}/weatherforecast/
+GET {{UserManagement_Api_HostAddress}}/api/Attendance/next-ticket
+Accept: application/json
+
+###
+
+POST {{UserManagement_Api_HostAddress}}/api/Attendance/generate-ticket?type=0
 Accept: application/json
 
 ###

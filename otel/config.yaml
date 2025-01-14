@@ -1,0 +1,50 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: otel-collector:9317
+      http:
+        endpoint: otel-collector:9318
+
+processors:
+  batch:
+  deltatocumulative:
+    max_stale: 1m
+  cumulativetodelta:
+
+extensions:
+  health_check:
+  pprof:
+  zpages:
+    endpoint: otel-collector:55679
+
+exporters:
+  debug:
+    verbosity: detailed
+  otlp/jaeger:
+    endpoint: jaeger-tracing:4317
+    tls:
+      insecure: true
+  otlphttp/seq:
+    endpoint: "http://seq-log:5341/ingest/otlp"
+  otlphttp/victoriametrics:
+    compression: gzip
+    encoding: proto
+    endpoint: "http://victoria-metrics:8428/opentelemetry"
+    tls:
+      insecure: true
+service:
+  extensions: [zpages, pprof, health_check]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp/jaeger]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlphttp/seq]
+    metrics:
+      receivers: [otlp]
+      processors: [deltatocumulative]
+      exporters: [otlphttp/victoriametrics, debug]

@@ -2,6 +2,7 @@
 using UserManagement.Domain.Entities;
 using UserManagement.Domain.Enums;
 using UserManagement.Domain.Ports;
+using UserManagement.Domain.Ports.TelemetryExtension;
 
 namespace UserManagement.Application.Services;
 
@@ -32,7 +33,11 @@ public class AttendanceTicketService(IUnitOfWork unitOfWork,
             {
                 await unitOfWork.AttendanceTickets.CreateAsync(ticket).ConfigureAwait(false);
                 await messageBrokerService.PublishTicketAsync(ticket).ConfigureAwait(false);
+                await unitOfWork.AttendanceTickets.GetWaitingTicketsCountByTypeAsync(ticket.Type);
                 await unitOfWork.CommitAsync();
+                
+                MetricsExtension.IncrementAttendanceCount(ticket.Type.ToString());
+                MetricsExtension.IncrementActiveAttendances(ticket.Type.ToString());
             }
             catch
             {
@@ -57,6 +62,12 @@ public class AttendanceTicketService(IUnitOfWork unitOfWork,
 
     public Task<AttendanceTicket> GetNextTicketAsync()
     {
-        return unitOfWork.AttendanceTickets.GetNextTicketAsync();
+        var ticket = unitOfWork.AttendanceTickets.GetNextTicketInWaitAndUpdateToCallStatusAsync();
+        MetricsExtension.DecrementActiveAttendances(ticket
+                                                    .GetAwaiter()
+                                                    .GetResult()
+                                                    .Type
+                                                    .ToString());
+        return ticket;
     }
 }

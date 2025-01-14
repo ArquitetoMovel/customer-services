@@ -63,8 +63,7 @@ builder.Services.AddOpenTelemetry()
             opt.Endpoint = otelCollectorUri)
     )
     .WithMetrics(metrics => metrics
-        .AddAspNetCoreInstrumentation()
-        .AddHttpClientInstrumentation()
+        .AddMeter("UserManagement.Api")
         .AddOtlpExporter(opt =>
             opt.Endpoint = otelCollectorUri
         )
