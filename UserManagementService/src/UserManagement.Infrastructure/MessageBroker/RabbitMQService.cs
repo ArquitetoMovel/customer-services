@@ -1,10 +1,13 @@
-using Microsoft.EntityFrameworkCore.Metadata;
 using UserManagement.Domain.Entities;
 using UserManagement.Domain.Ports;
 using RabbitMQ.Client;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
+using UserManagement.Domain.Ports.TelemetryExtension;
+using OpenTelemetry.Context.Propagation;
+using System.Diagnostics;
+using OpenTelemetry;
 
 namespace UserManagement.Infrastructure.MessageBroker;
 
@@ -52,27 +55,50 @@ public class RabbitMqService(IConfiguration configuration) : IMessageBrokerServi
     }
 
     public async Task PublishTicketAsync(AttendanceTicket ticket)
-    {
-        await _semaphore.WaitAsync();
-        try
         {
-            await EnsureConnectionAndChannelAsync();
+            await _semaphore.WaitAsync();
+            try
+            {
+                await EnsureConnectionAndChannelAsync();
 
-            var message = JsonSerializer.Serialize(ticket);
-            var body = new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(message));
+                var message = JsonSerializer.Serialize(ticket);
+                var body = new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(message));
 
-            if (_channel != null)
-                await _channel.BasicPublishAsync(
-                    exchange: CustomerExchange,
-                    routingKey: string.Empty,
-                    body: body
-                );
+                if (_channel != null)
+                {
+                    using var tracePublish = TracesExtension.StartActivity("Publishing Ticket", ActivityKind.Producer);
+                    tracePublish?.SetTag("messaging.system", "rabbitmq");
+
+                    var properties = new BasicProperties
+                    {
+                        ContentType = "application/json",
+                        DeliveryMode  = DeliveryModes.Persistent,
+                        Headers = new Dictionary<string, object?>()
+                    };
+
+                    if (tracePublish != null)
+                    {
+                        Propagators.DefaultTextMapPropagator.Inject(
+                            new PropagationContext(tracePublish.Context, Baggage.Current),
+                            properties.Headers,
+                            (carrier, key, value) => carrier[key] = value);
+
+                    }
+
+                    await _channel.BasicPublishAsync(
+                        exchange: CustomerExchange,
+                        routingKey: string.Empty,
+                        mandatory: false,
+                        basicProperties: properties,
+                        body: body
+                    );
+                }
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
         }
-        finally
-        {
-            _semaphore.Release();
-        }
-    }
 
     public async ValueTask DisposeAsync()
     {
@@ -88,4 +114,3 @@ public class RabbitMqService(IConfiguration configuration) : IMessageBrokerServi
         }
     }
 }
-

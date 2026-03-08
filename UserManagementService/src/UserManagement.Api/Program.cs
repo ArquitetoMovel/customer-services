@@ -2,7 +2,7 @@ using MongoDB.Driver;
 using OpenTelemetry;
 using OpenTelemetry.Context.Propagation;
 using OpenTelemetry.Resources;
-using OpenTelemetry.Instrumentation.Http;
+using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using UserManagement.Application.Services;
@@ -36,7 +36,7 @@ var compositeTextMapPropagator = new CompositeTextMapPropagator(new TextMapPropa
 
 Sdk.SetDefaultTextMapPropagator(compositeTextMapPropagator);
 
-var otelCollectorUri = new Uri("http://otel-collector:9317");
+var otelCollectorUri = new Uri(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] ?? "http://localhost:9317");
 
 // Register services
 builder.Services.AddSingleton<IMongoClient>(sp =>
@@ -49,7 +49,7 @@ builder.Services.AddScoped<IAttendanceTicketRepository, MongoAttendanceTicketRep
 
 builder.Services.AddScoped<IAttendanceTicketService, AttendanceTicketService>();
 builder.Services.AddScoped<GenerateAttendanceTicketUseCase>();
-builder.Services.AddScoped<GetNextAttendanceTicketUseCase>(); 
+builder.Services.AddScoped<GetNextAttendanceTicketUseCase>();
 
 // Configure OpenTelemetry
 builder.Services.AddOpenTelemetry()
@@ -64,10 +64,23 @@ builder.Services.AddOpenTelemetry()
     )
     .WithMetrics(metrics => metrics
         .AddMeter("UserManagement.Api")
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
         .AddOtlpExporter(opt =>
             opt.Endpoint = otelCollectorUri
         )
     );
+
+// Configure logging with OpenTelemetry.
+builder.Logging.AddOpenTelemetry(options =>
+{
+    options.SetResourceBuilder(ResourceBuilder.CreateDefault()
+        .AddService(builder.Environment.ApplicationName));
+    options.IncludeFormattedMessage = true;
+    options.ParseStateValues = true;
+    options.IncludeScopes = true;
+    options.AddOtlpExporter(exporter => exporter.Endpoint = otelCollectorUri);
+});
 
 var app = builder.Build();
 

@@ -95,6 +95,7 @@ services:
     environment:
       - ASPNETCORE_URLS=http://+:8080
       - ASPNETCORE_ENVIRONMENT=Development
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:9317
     ports:
       - "8080:8080"
     networks:
@@ -114,6 +115,7 @@ services:
     container_name: notification-app
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:9317
     restart: on-failure
     networks:
       - customer-network
@@ -163,7 +165,7 @@ services:
 
 networks:
   customer-network:
-    external: true
+    driver: bridge
 
 volumes:
   rabbitmq_data:

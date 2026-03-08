@@ -6,13 +6,15 @@ namespace UserManagement.Api.Controllers;
 
 [ApiController]
 [Route("api/attendance-tickets")]
-public class AttendanceTicketsController(GenerateAttendanceTicketUseCase generateAttendanceTicketUseCase)
+public class AttendanceTicketsController(GenerateAttendanceTicketUseCase generateAttendanceTicketUseCase,
+    ILogger<AttendanceTicketsController> logger)
     : ControllerBase
 {
     [HttpPost]
     public async Task<IActionResult> GenerateTicket([FromQuery] AttendanceType type = AttendanceType.Normal)
     {
         var ticket = await generateAttendanceTicketUseCase.ExecuteAsync(type);
+        logger.LogInformation("Generated attendance ticket {TicketNumber}", ticket.Number);
         return Ok(new
         {
             TicketNumber = ticket.Number,

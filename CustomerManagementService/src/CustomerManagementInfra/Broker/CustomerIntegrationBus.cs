@@ -64,6 +64,23 @@ public class CustomerIntegrationBus(IConnection connection, IServiceProvider ser
         }
     }
 
+    public async Task PublishAsync(UserTicket userTicket, CancellationToken cancellationToken = default)
+    {
+        await using var publishChannel = await connection.CreateChannelAsync(cancellationToken: cancellationToken);
+        const string notificationExchange = "notification.exchange";
+        const string notificationQueue = "ticket_status";
+        await publishChannel.ExchangeDeclareAsync(notificationExchange, ExchangeType.Fanout, durable: true,
+            cancellationToken: cancellationToken);
+        await publishChannel.QueueDeclareAsync(notificationQueue, durable: false, exclusive: false,
+            autoDelete: false, arguments: null, cancellationToken: cancellationToken);
+        await publishChannel.QueueBindAsync(notificationQueue, notificationExchange, string.Empty,
+            cancellationToken: cancellationToken);
+
+        var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(userTicket));
+        await publishChannel.BasicPublishAsync(notificationExchange, string.Empty, body,
+            cancellationToken: cancellationToken);
+    }
+
     public async Task StopConsumingAsync(CancellationToken cancellationToken)
     {
         if (channel is not null)

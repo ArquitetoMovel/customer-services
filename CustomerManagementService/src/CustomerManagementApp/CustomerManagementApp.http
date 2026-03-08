@@ -1,6 +1,6 @@
-@CustomerManagementApp_HostAddress = http://localhost:5159
+@CustomerManagementApp_HostAddress = https://localhost:7028
 
-GET {{CustomerManagementApp_HostAddress}}/weatherforecast/
+GET {{CustomerManagementApp_HostAddress}}/customers/next
 Accept: application/json
 
 ###

@@ -2,13 +2,11 @@ using Microsoft.EntityFrameworkCore;
 using NotificationService.Domain.Ports;
 using NotificationService.Infrastructure.MessageBroker;
 using NotificationService.Infrastructure.Persistence;
-using Npgsql;
 using OpenTelemetry;
 using OpenTelemetry.Context.Propagation;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,21 +28,23 @@ builder.Services.AddHostedService<NotificationService.Application.NotificationSe
 
 builder.Services.AddScoped<IAttendanceTicketRepository, AttendanceTicketRepository>();
 
+var otelCollectorUri = new Uri(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] ?? "http://localhost:9317");
+
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(resource => resource
         .AddService(serviceName: builder.Environment.ApplicationName))
-    .WithTracing(tracing => tracing
+    .WithTracing(tracing => tracing.AddSource(builder.Environment.ApplicationName)
         .AddAspNetCoreInstrumentation()
         .AddRabbitMQInstrumentation()
         .AddNpgsql()
         .AddOtlpExporter(options =>
         {
-            options.Endpoint = new Uri("http://otel-collector:9317");
+            options.Endpoint = otelCollectorUri;
         })
     )
     .WithMetrics(metrics => metrics
         .AddAspNetCoreInstrumentation()
-    );
+        .AddOtlpExporter(options => options.Endpoint = otelCollectorUri));
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
