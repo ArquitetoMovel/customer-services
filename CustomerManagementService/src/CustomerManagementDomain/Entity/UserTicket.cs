@@ -27,7 +27,7 @@ public class UserTicket
                 CancelTime = DateTime.UtcNow;
                 break;
             default:
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException(nameof(Status), $"Unexpected status value: {Status}");
         }
     }
 }

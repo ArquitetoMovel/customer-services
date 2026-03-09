@@ -8,32 +8,35 @@ namespace CustomerManagementInfra.Migrations
     /// <inheritdoc />
     public partial class migratonV2 : Migration
     {
+        private const string UserTicketsTable = "UserTickets";
+        private const string TimestampWithTimeZone = "timestamp with time zone";
+
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterColumn<DateTime>(
                 name: "CompleteTime",
-                table: "UserTickets",
-                type: "timestamp with time zone",
+                table: UserTicketsTable,
+                type: TimestampWithTimeZone,
                 nullable: true,
                 oldClrType: typeof(DateTime),
-                oldType: "timestamp with time zone");
+                oldType: TimestampWithTimeZone);
 
             migrationBuilder.AlterColumn<DateTime>(
                 name: "CancelTime",
-                table: "UserTickets",
-                type: "timestamp with time zone",
+                table: UserTicketsTable,
+                type: TimestampWithTimeZone,
                 nullable: true,
                 oldClrType: typeof(DateTime),
-                oldType: "timestamp with time zone");
+                oldType: TimestampWithTimeZone);
 
             migrationBuilder.AlterColumn<DateTime>(
                 name: "CallTime",
-                table: "UserTickets",
-                type: "timestamp with time zone",
+                table: UserTicketsTable,
+                type: TimestampWithTimeZone,
                 nullable: true,
                 oldClrType: typeof(DateTime),
-                oldType: "timestamp with time zone");
+                oldType: TimestampWithTimeZone);
         }
 
         /// <inheritdoc />
@@ -41,32 +44,32 @@ namespace CustomerManagementInfra.Migrations
         {
             migrationBuilder.AlterColumn<DateTime>(
                 name: "CompleteTime",
-                table: "UserTickets",
-                type: "timestamp with time zone",
+                table: UserTicketsTable,
+                type: TimestampWithTimeZone,
                 nullable: false,
                 defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                 oldClrType: typeof(DateTime),
-                oldType: "timestamp with time zone",
+                oldType: TimestampWithTimeZone,
                 oldNullable: true);
 
             migrationBuilder.AlterColumn<DateTime>(
                 name: "CancelTime",
-                table: "UserTickets",
-                type: "timestamp with time zone",
+                table: UserTicketsTable,
+                type: TimestampWithTimeZone,
                 nullable: false,
                 defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                 oldClrType: typeof(DateTime),
-                oldType: "timestamp with time zone",
+                oldType: TimestampWithTimeZone,
                 oldNullable: true);
 
             migrationBuilder.AlterColumn<DateTime>(
                 name: "CallTime",
-                table: "UserTickets",
-                type: "timestamp with time zone",
+                table: UserTicketsTable,
+                type: TimestampWithTimeZone,
                 nullable: false,
                 defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                 oldClrType: typeof(DateTime),
-                oldType: "timestamp with time zone",
+                oldType: TimestampWithTimeZone,
                 oldNullable: true);
         }
     }

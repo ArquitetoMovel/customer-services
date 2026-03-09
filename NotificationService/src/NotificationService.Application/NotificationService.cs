@@ -33,7 +33,7 @@ public class NotificationService : IHostedService
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<NotificationService>>();
         await repository.AddAsync(ticket);
         var waitingTickets = await repository.GetWaitingTicketsAsync();
-        logger.LogInformation($"Tickets em espera atualizados. Total: {waitingTickets.Count()}");
+        logger.LogInformation("Tickets em espera atualizados. Total: {WaitingTicketsCount}", waitingTickets.Count());
         // Adicione aqui lógica adicional para notificações ou atualizações de painel
     }
 }

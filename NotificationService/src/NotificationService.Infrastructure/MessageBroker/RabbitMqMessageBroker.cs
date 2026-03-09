@@ -45,18 +45,10 @@ public class RabbitMqMessageBroker(IConfiguration configuration) : IMessageBroke
             {
                 try
                 {
-                    var body = ea.Body.ToArray();
-                    var message = Encoding.UTF8.GetString(body);
-                    var ticket = JsonSerializer.Deserialize<AttendanceTicket>(message);
-
-                    if (ticket != null)
-                    {
-                        await processTicket(ticket);
-                    }
+                    await ProcessMessageAsync(ea, processTicket);
                 }
                 catch (Exception ex)
                 {
-                    // Log the error
                     Console.WriteLine(ex);
                 }
             };
@@ -96,5 +88,16 @@ public class RabbitMqMessageBroker(IConfiguration configuration) : IMessageBroke
         }
     }
 }
+
+    private static async Task ProcessMessageAsync(BasicDeliverEventArgs ea, Func<AttendanceTicket, Task> processTicket)
+    {
+        var body = ea.Body.ToArray();
+        var message = Encoding.UTF8.GetString(body);
+        var ticket = JsonSerializer.Deserialize<AttendanceTicket>(message);
+        if (ticket != null)
+        {
+            await processTicket(ticket);
+        }
+    }
    
 }

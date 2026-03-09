@@ -13,17 +13,17 @@ COPY ["src/NotificationService.Domain/NotificationService.Domain.csproj", "src/N
 COPY ["src/NotificationService.Infrastructure/NotificationService.Infrastructure.csproj", "src/NotificationService.Infrastructure/"]
 COPY ["src/NotificationService.Application/NotificationService.Application.csproj", "src/NotificationService.Application/"]
 RUN dotnet restore "src/NotificationService.Api/NotificationService.Api.csproj"
-COPY . .
-WORKDIR "src/NotificationService.Api"
-RUN dotnet build "NotificationService.Api.csproj" -c $BUILD_CONFIGURATION -o /app/build
+COPY ./src/ ./src/
+WORKDIR "/src/NotificationService.Api"
+RUN dotnet build "NotificationService.Api.csproj" -c "$BUILD_CONFIGURATION" -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "NotificationService.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "NotificationService.Api.csproj" -c "$BUILD_CONFIGURATION" -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /src
-COPY --chmod=777 --from=build /src/src .
+COPY --chmod=755 --from=build /src/src .
 WORKDIR /app
 COPY --from=publish /app/publish .
 # COPY --chmod=755 init-notificationDB.sh .
@@ -32,4 +32,5 @@ COPY --from=publish /app/publish .
 RUN dotnet tool install --global dotnet-ef
 
 #  ENTRYPOINT ["./init-notificationDB.sh"]
+USER $APP_UID
 ENTRYPOINT ["dotnet", "NotificationService.Api.dll"]

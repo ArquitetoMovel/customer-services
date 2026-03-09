@@ -12,7 +12,7 @@ namespace CustomerManagementInfra.Broker;
 
 public class CustomerIntegrationBus(IConnection connection, IServiceProvider serviceProvider) : ICustomerIntegrationBus
 {
-    private record Ticket(int Number, int Type, DateTime CreatedAt, int Status, DateTime UpdatedAt);
+    private sealed record Ticket(int Number, int Type, DateTime CreatedAt, int Status, DateTime UpdatedAt);
     public void StartConsuming()
     {
         try

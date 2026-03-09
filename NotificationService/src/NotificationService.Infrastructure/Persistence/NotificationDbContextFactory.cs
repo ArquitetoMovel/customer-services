@@ -7,8 +7,12 @@ public class NotificationDbContextFactory : IDesignTimeDbContextFactory<Notifica
 {
     public NotificationDbContext CreateDbContext(string[] args)
     {
+        var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__NotificationDb")
+            ?? throw new InvalidOperationException(
+                "Set the 'ConnectionStrings__NotificationDb' environment variable before running migrations.");
+
         var optionsBuilder = new DbContextOptionsBuilder<NotificationDbContext>();
-        optionsBuilder.UseNpgsql("Host=postgres;Database=notificationdb;Username=nuser;Password=npass1");
+        optionsBuilder.UseNpgsql(connectionString);
 
         return new NotificationDbContext(optionsBuilder.Options);
     }

@@ -19,7 +19,7 @@ public class UnitOfWork(UserTicketDbContext context, IUserTicketRepository userT
         try
         {
             if (_transaction == null)
-                throw new NullReferenceException("A transaction has not been started. Call BeginTransactionAsync() first.");
+                throw new InvalidOperationException("A transaction has not been started. Call BeginTransactionAsync() first.");
             
             await SaveChangesAsync();
             await _transaction.CommitAsync();
@@ -34,7 +34,7 @@ public class UnitOfWork(UserTicketDbContext context, IUserTicketRepository userT
     public async Task RollbackAsync()
     {
         if (_transaction == null)
-                throw new NullReferenceException("A transaction has not been started. Call BeginTransactionAsync() first.");
+            throw new InvalidOperationException("A transaction has not been started. Call BeginTransactionAsync() first.");
         
         await _transaction.RollbackAsync();
     }
@@ -69,9 +69,18 @@ public class UnitOfWork(UserTicketDbContext context, IUserTicketRepository userT
     }
 
 
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _transaction?.Dispose();
+            context.Dispose();
+        }
+    }
+
     public void Dispose()
     {
-        _transaction?.Dispose();
-        context.Dispose();
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 }

@@ -51,4 +51,4 @@ app.UseHttpsRedirection();
 app.MapControllers()
     .WithOpenApi();
 
-app.Run();
+await app.RunAsync();

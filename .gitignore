@@ -402,3 +402,8 @@ victoria/
 
 # Seq data directory
 seq/
+
+# ASP.NET Core — Sensitive local configuration (never commit credentials)
+**/appsettings.Development.json
+**/.idea/dataSources.xml
+**/.idea/dataSources.local.xml

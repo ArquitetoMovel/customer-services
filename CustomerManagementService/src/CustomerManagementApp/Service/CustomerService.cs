@@ -16,7 +16,6 @@ public class CustomerService(IUnitOfWork unitOfWork)
 
     private async Task<List<UserTicket>?> GetAndUpdateNextCustomers()
     {
-       //  await unitOfWork.BeginTransactionAsync();
 
         try
         {

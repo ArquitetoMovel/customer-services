@@ -1,0 +1,19 @@
+# Exclude sensitive IDE config files (S6470)
+.idea/
+.vs/
+
+# Exclude build outputs
+**/bin/
+**/obj/
+
+# Exclude test projects
+tests/
+
+# Exclude git and CI metadata
+.git/
+.github/
+
+# Exclude local dev overrides that may contain secrets
+**/appsettings.Development.json
+**/*.user
+**/secrets.json

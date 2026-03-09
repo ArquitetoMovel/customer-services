@@ -22,7 +22,7 @@ public class AttendanceTicketService(IUnitOfWork unitOfWork,
             if (_lastTicketNumber == 0)
             {
                 var lastTicket = await unitOfWork.AttendanceTickets.GetLastTicketAsync().ConfigureAwait(false);
-                _lastTicketNumber = lastTicket?.Number ?? 0;
+                Interlocked.Exchange(ref _lastTicketNumber, lastTicket?.Number ?? 0);
             }
         
             var ticketNumber = Interlocked.Increment(ref _lastTicketNumber);

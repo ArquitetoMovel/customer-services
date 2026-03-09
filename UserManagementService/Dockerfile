@@ -13,12 +13,12 @@ COPY ["src/UserManagement.Domain/UserManagement.Domain.csproj", "src/UserManagem
 COPY ["src/UserManagement.Infrastructure/UserManagement.Infrastructure.csproj", "src/UserManagement.Infrastructure/"]
 RUN dotnet restore "src/UserManagement.Api/UserManagement.Api.csproj"
 COPY . .
-WORKDIR "src/UserManagement.Api"
+WORKDIR /src/src/UserManagement.Api
 RUN dotnet build "UserManagement.Api.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "UserManagement.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "UserManagement.Api.csproj" -c "$BUILD_CONFIGURATION" -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app

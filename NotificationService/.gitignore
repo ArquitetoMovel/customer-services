@@ -1,0 +1,15 @@
+# JetBrains IDE files — may contain hard-coded credentials (S6703)
+.idea/
+*.iml
+
+# Build outputs
+bin/
+obj/
+
+# User-specific settings
+*.user
+*.suo
+.vs/
+
+# dotnet secrets
+secrets.json
