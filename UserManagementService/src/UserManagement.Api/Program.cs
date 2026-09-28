@@ -48,7 +48,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapControllers()
-    .WithOpenApi();
+app.MapControllers();
 
 await app.RunAsync();
