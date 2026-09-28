@@ -36,7 +36,7 @@ var compositeTextMapPropagator = new CompositeTextMapPropagator(new TextMapPropa
 
 Sdk.SetDefaultTextMapPropagator(compositeTextMapPropagator);
 
-var otelCollectorUri = new Uri("http://otel-collector:9317");
+var otelCollectorUri = new Uri(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] ?? "http://localhost:9317");
 
 // Register services
 builder.Services.AddSingleton<IMongoClient>(sp =>

@@ -11,6 +11,7 @@ using OpenTelemetry.Trace;
 
 
 var builder = WebApplication.CreateBuilder(args);
+var otelCollectorUri = new Uri(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] ?? "http://localhost:9317");
 
 var compositeTextMapPropagator = new CompositeTextMapPropagator(new TextMapPropagator[]
 {
@@ -39,11 +40,12 @@ builder.Services.AddOpenTelemetry()
         .AddNpgsql()
         .AddOtlpExporter(options =>
         {
-            options.Endpoint = new Uri("http://otel-collector:9317");
+            options.Endpoint = otelCollectorUri;
         })
     )
     .WithMetrics(metrics => metrics
         .AddAspNetCoreInstrumentation()
+        .AddOtlpExporter(options => options.Endpoint = otelCollectorUri)
     );
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

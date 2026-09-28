@@ -67,14 +67,13 @@ public static class Extensions
 
     private static TBuilder AddOpenTelemetryExporters<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
-        builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"] = "http://localhost:9317";
         var useOtlpExporter = !string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]);
 
         if (useOtlpExporter)
         {
             builder.Services
                 .AddOpenTelemetry()
-                .UseOtlpExporter(protocol: OtlpExportProtocol.Grpc, new Uri(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]));
+                .UseOtlpExporter(protocol: OtlpExportProtocol.Grpc, new Uri(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]!));
         }
 
         return builder;

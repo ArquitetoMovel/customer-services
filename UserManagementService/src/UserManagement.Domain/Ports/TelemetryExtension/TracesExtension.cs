@@ -21,9 +21,9 @@ public static class TracesExtension
         activity?.SetTag(key, value);
     }
 
-    public static void AddEvent(this Activity activity, string eventName, Dictionary<string, object>? tags = null)
+    public static void AddEvent(this Activity activity, string eventName, Dictionary<string, object?>? tags = null)
     {
-        var activityEvent = new ActivityEvent(eventName, DateTimeOffset.UtcNow, new ActivityTagsCollection(tags));
+        var activityEvent = new ActivityEvent(eventName, DateTimeOffset.UtcNow, new ActivityTagsCollection(tags ?? []));
         activity?.AddEvent(activityEvent);
     }
 
