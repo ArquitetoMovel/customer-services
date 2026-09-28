@@ -19,6 +19,7 @@
       "https://localhost:45341"
     ],
     "redirectHttpToHttps": false,
+    "enableHsts": false,
     "minRequestBodyDataRateBytesPerSecond": 240.0,
     "minRequestBodyDataRateGracePeriodMilliseconds": 5000,
     "globalRateLimit": null,
@@ -41,14 +42,28 @@
     "certificatesPath": null,
     "defaultPassword": null
   },
+  "cluster": {
+    "isEnabled": false,
+    "nodeName": null,
+    "clusterListenUri": null,
+    "internalApiUri": null,
+    "leaderLeaseDurationSeconds": null,
+    "leaderWorkerIdleSleepMilliseconds": null
+  },
   "diagnostics": {
     "internalLogPath": "/data/Logs",
     "internalLoggingLevel": "Information",
     "internalLogServerApiKey": null,
     "internalLogServerUrl": null,
     "metricsSamplingIntervalSeconds": 300,
-    "nativeStorageMetricsSamplingIntervalMinutes": 60,
-    "telemetryServerUrl": null
+    "telemetryServerUrl": null,
+    "selfToStderr": null,
+    "otlp": {
+      "endpoint": null,
+      "headers": null,
+      "protocol": null,
+      "metricsSamplingIntervalSeconds": null
+    }
   },
   "features": {
     "enabled": []
@@ -57,7 +72,8 @@
     "adminPasswordHash": null,
     "adminPassword": null,
     "adminUsername": null,
-    "requireAuthenticationForHttpIngestion": false
+    "requireAuthenticationForHttpIngestion": false,
+    "noAuthentication": false
   },
   "metastore": {
     "msSql": {
@@ -86,11 +102,12 @@
   "storage": {
     "secretKey": "m7Y6Xyi0v3T7Irzs2OLoXdg7LzqIB8ZuksZndgC+M2g=",
     "flare": {
-      "concurrentReaderLimit": null,
-      "readerParallelismLimit": null,
-      "indexerPriority": 0.0
+      "concurrentQueryLimit": null,
+      "queryThreadPoolSize": null,
+      "queryThreadMaxWorkingSetBytes": null
     },
     "disableFreeDiskSpaceChecking": false,
-    "maximumFutureTimestampDriftSeconds": 3420
+    "maximumFutureTimestampDriftSeconds": 3420,
+    "metricsIngestionWindowSeconds": null
   }
 }
