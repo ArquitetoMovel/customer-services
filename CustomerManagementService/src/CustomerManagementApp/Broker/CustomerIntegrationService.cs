@@ -4,17 +4,15 @@ namespace CustomerManagementApp.Broker;
 
 public class CustomerIntegrationService(ICustomerIntegrationBus customerIntegrationBus) : IHostedService
 { 
-    public Task StartAsync(CancellationToken cancellationToken)
+    public async Task StartAsync(CancellationToken cancellationToken)
     {
-        customerIntegrationBus.StartConsuming();
+        await customerIntegrationBus.StartConsumingAsync(cancellationToken);
         Console.WriteLine("CustomerIntegrationService is starting.");
-        return Task.CompletedTask;
     }
 
-    public Task StopAsync(CancellationToken cancellationToken)
+    public async Task StopAsync(CancellationToken cancellationToken)
     {
-        customerIntegrationBus.StopConsuming();
+        await customerIntegrationBus.StopConsumingAsync(cancellationToken);
         Console.WriteLine("CustomerIntegrationService is stopping.");
-        return Task.CompletedTask;
     }
 }

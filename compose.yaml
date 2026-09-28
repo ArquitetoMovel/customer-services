@@ -65,6 +65,11 @@ services:
   postgres:
     image: postgres:15
     container_name: notification_postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nuser -d notificationdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     environment:
       POSTGRES_DB: notificationdb
       POSTGRES_USER: nuser
@@ -99,20 +104,14 @@ services:
     build:
       context: NotificationService
       dockerfile: Dockerfile
+    ports:
+      - "8081:8080"
     depends_on:
       rabbitmq:
         condition: service_healthy
       postgres:
-        condition: service_started
+        condition: service_healthy
     container_name: notification-app
-    command:
-      [
-        "~/.dotnet/tools/dotnet-ef",
-        "database",
-        "update",
-        "--project",
-        "../src/NotificationService.Infrastructure/NotificationService.Infrastructure.csproj",
-      ]
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
     restart: on-failure

@@ -6,7 +6,7 @@ using NotificationService.Domain.Ports;
 
 namespace NotificationService.Application;
 
-public class NotificationService : IHostedService
+public class NotificationService : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly IMessageBroker _messageBroker;
@@ -16,14 +16,9 @@ public class NotificationService : IHostedService
         _messageBroker = messageBroker;
     }
 
-    public Task StartAsync(CancellationToken cancellationToken)
+    protected override Task ExecuteAsync(CancellationToken cancellationToken)
     {
         return _messageBroker.ConsumeTicketsAsync(ProcessTicketAsync, cancellationToken);
-    }
-
-    public Task StopAsync(CancellationToken cancellationToken)
-    {
-        return Task.CompletedTask;
     }
 
     private async Task ProcessTicketAsync(AttendanceTicket ticket)

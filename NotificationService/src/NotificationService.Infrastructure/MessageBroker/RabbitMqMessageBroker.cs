@@ -35,6 +35,10 @@ public class RabbitMqMessageBroker(IConfiguration configuration) : IMessageBroke
             connection = await _factory.CreateConnectionAsync(cancellationToken);
             channel = await connection.CreateChannelAsync(cancellationToken: cancellationToken);
 
+            await channel.ExchangeDeclareAsync(_exchangeName, ExchangeType.Fanout, durable: true,
+                cancellationToken: cancellationToken);
+            await channel.QueueDeclareAsync(_queueName, durable: false, exclusive: false,
+                autoDelete: false, arguments: null, cancellationToken: cancellationToken);
             await channel.QueueBindAsync(queue: _queueName,
                 exchange: _exchangeName,
                 routingKey: string.Empty,

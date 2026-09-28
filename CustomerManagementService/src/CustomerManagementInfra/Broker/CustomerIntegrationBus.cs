@@ -13,14 +13,23 @@ namespace CustomerManagementInfra.Broker;
 public class CustomerIntegrationBus(IConnection connection, IServiceProvider serviceProvider) : ICustomerIntegrationBus
 {
     private sealed record Ticket(int Number, int Type, DateTime CreatedAt, int Status, DateTime UpdatedAt);
-    public void StartConsuming()
+    private const string ExchangeName = "customer.exchange";
+    private const string QueueName = "attendance_customers";
+    private IChannel? channel;
+
+    public async Task StartConsumingAsync(CancellationToken cancellationToken)
     {
         try
         {
-
-            var channel = connection.CreateModel();
-            var consumer = new EventingBasicConsumer(channel);
-            consumer.Received += async (_, ea) =>
+            channel = await connection.CreateChannelAsync(cancellationToken: cancellationToken);
+            await channel.ExchangeDeclareAsync(ExchangeName, ExchangeType.Fanout, durable: true,
+                cancellationToken: cancellationToken);
+            await channel.QueueDeclareAsync(QueueName, durable: false, exclusive: false,
+                autoDelete: false, arguments: null, cancellationToken: cancellationToken);
+            await channel.QueueBindAsync(QueueName, ExchangeName, string.Empty,
+                cancellationToken: cancellationToken);
+            var consumer = new AsyncEventingBasicConsumer(channel);
+            consumer.ReceivedAsync += async (_, ea) =>
             {
                 var body = ea.Body;
                 var message = Encoding.UTF8.GetString(body.ToArray());
@@ -41,22 +50,28 @@ public class CustomerIntegrationBus(IConnection connection, IServiceProvider ser
 
                 Console.WriteLine($"Message received: {message}");
             };
-            channel.BasicConsume(queue: "attendance_customers",
+            await channel.BasicConsumeAsync(queue: QueueName,
                     autoAck: true,
-                    consumer: consumer);    
+                    consumer: consumer,
+                    cancellationToken: cancellationToken);
         }
         catch (Exception ex) 
             when (ex is BrokerUnreachableException or OperationInterruptedException) 
         {
             Console.WriteLine("Falha ao conectar ao RabbitMQ. Tentando novamente em 5 segundos...");
             Console.WriteLine(ex.Message);
-            Task.Delay(TimeSpan.FromSeconds(10));  
+            await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken);
         }
-        
     }
 
-    public void StopConsuming()
+    public async Task StopConsumingAsync(CancellationToken cancellationToken)
     {
-        connection.Close();
+        if (channel is not null)
+        {
+            await channel.CloseAsync(cancellationToken);
+            await channel.DisposeAsync();
+        }
+
+        await connection.CloseAsync(cancellationToken);
     }
 }
