@@ -132,10 +132,11 @@ services:
     volumes:
       - ./seq:/data
     ports:
-      - "8282:80"
-      - "5341:5341"
+      - "127.0.0.1:8282:80"
+      - "127.0.0.1:5341:5341"
     environment:
       - ACCEPT_EULA=Y
+      - SEQ_FIRSTRUN_NOAUTHENTICATION=true
     networks:
       - customer-network
   victoria-metrics:
@@ -163,7 +164,7 @@ services:
 
 networks:
   customer-network:
-    external: true
+    driver: bridge
 
 volumes:
   rabbitmq_data:
