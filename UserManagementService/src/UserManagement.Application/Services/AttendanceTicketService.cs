@@ -60,14 +60,10 @@ public class AttendanceTicketService(IUnitOfWork unitOfWork,
     }
  
 
-    public Task<AttendanceTicket> GetNextTicketAsync()
+    public async Task<AttendanceTicket> GetNextTicketAsync()
     {
-        var ticket = unitOfWork.AttendanceTickets.GetNextTicketInWaitAndUpdateToCallStatusAsync();
-        MetricsExtension.DecrementActiveAttendances(ticket
-                                                    .GetAwaiter()
-                                                    .GetResult()
-                                                    .Type
-                                                    .ToString());
+        var ticket = await unitOfWork.AttendanceTickets.GetNextTicketInWaitAndUpdateToCallStatusAsync();
+        MetricsExtension.DecrementActiveAttendances(ticket.Type.ToString());
         return ticket;
     }
 }

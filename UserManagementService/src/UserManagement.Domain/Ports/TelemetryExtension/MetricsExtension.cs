@@ -1,4 +1,4 @@
-using System;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 
@@ -10,7 +10,7 @@ public static class MetricsExtension
     private static readonly Counter<long> AttendanceCounter;
     private static readonly UpDownCounter<long> ActiveAttendancesCounter;
     private static readonly ObservableGauge<long> WaitingAttendancesGauge;
-    private static long _waitingAttendances;
+    private static readonly ConcurrentDictionary<string, long> WaitingAttendances = new();
 
     static MetricsExtension()
     {
@@ -30,7 +30,9 @@ public static class MetricsExtension
             name: "attendance.waiting",
             unit: "{waiting_attendances}",
             description: "Number of attendances in waiting status",
-            observeValue: () => _waitingAttendances
+            observeValues: () => WaitingAttendances.Select(entry =>
+                new Measurement<long>(entry.Value,
+                    new KeyValuePair<string, object?>("priority", entry.Key)))
         );
     }
 
@@ -66,7 +68,6 @@ public static class MetricsExtension
 
     public static void SetWaitingAttendances(long count, string priority)
     {
-        var tags = new TagList { { "priority", priority } };
-        _waitingAttendances = count;
+        WaitingAttendances[priority] = count;
     }
 }
