@@ -8,7 +8,7 @@ receivers:
 
 processors:
   batch:
-  deltatocumulative:
+  delta_to_cumulative:
     max_stale: 1m
   cumulativetodelta:
 
@@ -21,13 +21,13 @@ extensions:
 exporters:
   debug:
     verbosity: detailed
-  otlp/jaeger:
+  otlp_grpc/jaeger:
     endpoint: jaeger-tracing:4317
     tls:
       insecure: true
-  otlphttp/seq:
+  otlp_http/seq:
     endpoint: "http://seq-log:5341/ingest/otlp"
-  otlphttp/victoriametrics:
+  otlp_http/victoriametrics:
     compression: gzip
     encoding: proto
     endpoint: "http://victoria-metrics:8428/opentelemetry"
@@ -39,12 +39,12 @@ service:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [otlp/jaeger]
+      exporters: [otlp_grpc/jaeger]
     logs:
       receivers: [otlp]
       processors: [batch]
-      exporters: [otlphttp/seq]
+      exporters: [otlp_http/seq]
     metrics:
       receivers: [otlp]
-      processors: [deltatocumulative]
-      exporters: [otlphttp/victoriametrics, debug]
+      processors: [delta_to_cumulative]
+      exporters: [otlp_http/victoriametrics, debug]
