@@ -121,12 +121,13 @@ services:
       - customer-network
     
   jaeger-tracing:
-    image: jaegertracing/all-in-one:latest
+    image: jaegertracing/jaeger:2.21.0
     ports:
       - "16686:16686"
       - "14250:14250"
       - "14268:14268"
       - "4317:4317"
+      - "4318:4318"
     networks:
       - customer-network
   seq-log:
@@ -143,13 +144,13 @@ services:
   victoria-metrics:
     image: victoriametrics/victoria-metrics
     volumes:
-      - ./victoria:/victoria-metrics-data
+      - victoria_metrics_data:/victoria-metrics-data
     ports:
       - "8428:8428"
     networks:
       - customer-network
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.110.0
+    image: otel/opentelemetry-collector-contrib:0.161.0
     volumes:
       - ./otel/config.yaml:/etc/otelcol-contrib/config.yaml
     ports:
@@ -174,3 +175,4 @@ volumes:
   mongo2_data:
   mongo3_data:
   postgres_data:
+  victoria_metrics_data:
