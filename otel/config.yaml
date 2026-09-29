@@ -35,6 +35,14 @@ exporters:
     tls:
       insecure: true
 service:
+  telemetry:
+    traces:
+      processors:
+        - batch:
+            exporter:
+              otlp:
+                protocol: http/protobuf
+                endpoint: http://jaeger-tracing:4318
   extensions: [zpages, pprof, health_check]
   pipelines:
     traces:
