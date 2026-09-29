@@ -14,6 +14,7 @@ processors:
 
 extensions:
   health_check:
+    endpoint: 0.0.0.0:13133
   pprof:
   zpages:
     endpoint: otel-collector:55679
