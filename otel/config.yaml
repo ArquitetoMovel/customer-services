@@ -10,13 +10,13 @@ processors:
   batch: {}
 
 exporters:
-  otlp/jaeger:
+  otlp_grpc/jaeger:
     endpoint: jaeger-tracing:4317
     tls:
       insecure: true
-  otlphttp/victoriametrics:
+  otlp_http/victoriametrics:
     metrics_endpoint: http://victoria-metrics:8428/opentelemetry/v1/metrics
-  otlphttp/seq:
+  otlp_http/seq:
     endpoint: http://seq-log:80/ingest/otlp
 
 extensions:
@@ -33,12 +33,12 @@ service:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [otlp/jaeger]
+      exporters: [otlp_grpc/jaeger]
     metrics:
       receivers: [otlp]
       processors: [batch]
-      exporters: [otlphttp/victoriametrics]
+      exporters: [otlp_http/victoriametrics]
     logs:
       receivers: [otlp]
       processors: [batch]
-      exporters: [otlphttp/seq]
+      exporters: [otlp_http/seq]
