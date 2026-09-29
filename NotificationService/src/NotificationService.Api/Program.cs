@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using NotificationService.Domain.Ports;
 using NotificationService.Infrastructure.MessageBroker;
 using NotificationService.Infrastructure.Persistence;
+using Npgsql;
 using OpenTelemetry;
 using OpenTelemetry.Context.Propagation;
 using OpenTelemetry.Metrics;
@@ -64,4 +65,3 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 await app.RunAsync();
-
